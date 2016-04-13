@@ -1,6 +1,7 @@
 package com.mygdx.game;
 
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.Rectangle2D.Float;
 import java.awt.geom.RectangularShape;
 import java.util.ArrayList;
 
@@ -57,7 +58,7 @@ public class Player extends Entity{
 		Vector2 sidev=new Vector2();
 		strafe=false;
 		inactiveTime=0;
-		speedScale=speedScale=1/2.5f;
+		speedScale=2/2.5f;
 	}
 	public Matrix4 update(ArrayList<Rectangle2D.Float> e){
 		float vel=(float) Math.sqrt(dx*dx+dx*dz);
@@ -76,7 +77,7 @@ public class Player extends Entity{
 				strafe=true;
 				strafeTime=10;
 				stamina-=30f;
-				speedScale=1/1.25f;
+				speedScale=2/1.25f;
 				inactiveTime=15;
 			}
 		}else if(!up&&down){
@@ -85,7 +86,7 @@ public class Player extends Entity{
 				strafe=true;
 				strafeTime=10;
 				stamina-=30f;
-				speedScale=1/1.25f;
+				speedScale=2/1.25f;
 				inactiveTime=15;
 			}
 		}else{
@@ -105,7 +106,7 @@ public class Player extends Entity{
 				strafe=true;
 				strafeTime=10;
 				stamina-=30;
-				speedScale=1/1.25f;
+				speedScale=2/1.25f;
 				inactiveTime=15;
 			}
 		}else if(left&&!right){
@@ -114,7 +115,7 @@ public class Player extends Entity{
 				strafe=true;
 				strafeTime=10;
 				stamina-=30;
-				speedScale=1/1.25f;
+				speedScale=2/1.25f;
 				inactiveTime=15;
 			}
 		}else{
@@ -137,14 +138,14 @@ public class Player extends Entity{
 			if(strafeTime<=0){
 				strafe=false;
 			}
-			speedScale=1/1.25f;
+			speedScale=2/1.25f;
 			if(strafeTime<3){
-				speedScale=(speedScale+1/2.5f)/2;
+				speedScale=(speedScale+2/2.5f)/2;
 			}
-			speedScale=1/1.25f;
+			speedScale=2/1.25f;
 			velocity.scl(.2f/velocity.len());
 		}else{
-			speedScale=1/2.5f;
+			speedScale=2/2.5f;
 		}
 		if(inactiveTime>0)
 			inactiveTime--;
@@ -163,22 +164,25 @@ public class Player extends Entity{
 			stamina=0;
 		else if(stamina<MAX_STAMINA-1f&&inactiveTime==0)
 			stamina+=1f;
-		if(!collides(e,velocity.x*speedScale+dx*speedScale,velocity.y*speedScale+dz*speedScale)){
+		
+		/*if(!collides(e,velocity.x*speedScale+dx*speedScale,velocity.y*speedScale+dz*speedScale)){
 			setX(getX()+velocity.x*speedScale+dx*speedScale);
 			setZ(getZ()+velocity.y*speedScale+dz*speedScale);
 		}else{
-			if(!collides(e,0f,dz*speedScale)){
+			/*if(!collides(e,0f,dz*speedScale)){
 				setZ(getZ()+dz*speedScale);
 			}else if(!collides(e,dx*speedScale,0f)){
 				setX(getX()+dx*speedScale);
 			}
+		}*/
+		if(!collides(e,dx*speedScale,dz*speedScale)){
+		setX(getX()+dx*speedScale);
+		setZ(getZ()+dz*speedScale);
 		}
-		
 		Matrix4 m4=new Matrix4();
 		m4.setToRotation(new Vector3(0,-1,0),((mouseX-initMouseX)-getAngle())%360);
 		angle=(float) mouseX;
 		
-		System.out.println(stamina);
 		return m4;
 		//b.setLinearVelocity((float)dx*200,(float)dy*200);
 		//b.applyLinearImpulse(1.0f, dx ,dy ,true);
@@ -186,13 +190,29 @@ public class Player extends Entity{
 	}
 	private boolean collides(ArrayList<Rectangle2D.Float> e, float dx2, float dz2) {
 		boolean collides=false;
-		System.out.print((getX()+dx2)+" ");
-		System.out.println(getZ()+dz2);
-		Rectangle2D.Float p=new Rectangle2D.Float(getX()+dx2+1/2f,getY()+dz2+1/2f,1,1);
+		Rectangle2D.Float p=new Rectangle2D.Float(getX()+dx2+1/2f,getZ()+dz2+1/2f,1,1);
 		for(Rectangle2D.Float r:e){
 			if(p.intersects(r)){
 				collides=true;
 				System.out.println(r.getX()+" "+r.getY()+" "+r.getWidth()+" "+r.getHeight());
+				Rectangle2D.Float intersect=(Float) p.createIntersection(r);
+				if(intersect.width>intersect.height){
+					
+					//Vector2 norm=new Vector2(1.0f,0f);
+					setZ(getZ()+(dz2+intersect.height));
+					//velocity.setLength(velocity.dot(norm));
+					velocity.y=0f;
+					dz=0f;
+					System.out.println("nigger");
+					setX(getX()+dx2);
+				}else{
+					//Vector2 norm=new Vector2(0f,1.0f);
+					setX(getX()+(dx2+intersect.width));
+					//velocity.setLength(velocity.dot(norm));
+					velocity.x=0f;
+					dx=0f;
+					setZ(getZ()+dz2);
+				}
 			}
 		}
 		

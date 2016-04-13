@@ -50,6 +50,8 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 
 public class MyGdxGame extends ApplicationAdapter implements ApplicationListener{
+	public static final int WIDTH=640;
+	public static final int HEIGHT=480;
 	ModelBatch mbatch;
 	SpriteBatch sbatch;
 	PerspectiveCamera cam;
@@ -131,7 +133,7 @@ public class MyGdxGame extends ApplicationAdapter implements ApplicationListener
         e.add(new Entity(3f,1f,9f,5,4,10));
         
         
-        stage=new Stage(new StretchViewport(1280,960));
+        stage=new Stage(new StretchViewport(WIDTH,HEIGHT));
         curStam=0;
         fullstamina=new Texture[6];
         fullhealth=new Image[6];
@@ -148,11 +150,12 @@ public class MyGdxGame extends ApplicationAdapter implements ApplicationListener
         stage.addActor(fullhealth[curStam]);
         timeUntilFireball=0;
         
-        Rectangle2D.Float rect1=new Rectangle2D.Float(0,0,11/8f,1f);
+        Rectangle2D.Float rect1=new Rectangle2D.Float(0,0,11/8f,20f);
+        Rectangle2D.Float rect2=new Rectangle2D.Float(0,0,18f,11/8f);
         
         //Rectangle2D.Float rect2=new Rectangle2D.Float(0,11/8f,11/8f,7*2f);
         collisions.add(rect1);
-        //collisions.add(rect2);
+        collisions.add(rect2);
         
         mainLevel=new Level();
 
@@ -390,10 +393,10 @@ public class MyGdxGame extends ApplicationAdapter implements ApplicationListener
 		Image backgroundI=new Image(new Texture(Gdx.files.internal("images/health_empty.png")));
 		stamI.setScale(2f);
 		stamI.setX(0);
-		stamI.setY(960-44);
+		stamI.setY(HEIGHT-44);
 		backgroundI.setScale(2f);
 		backgroundI.setX(0);
-		backgroundI.setY(960-44);
+		backgroundI.setY(HEIGHT-44);
 		stage.addActor(backgroundI);
         stage.addActor(stamI);
 	}
