@@ -10,6 +10,7 @@ public enum Block {
 	STONE("stone"),
 	STONEGRASS("grassStone"),
 	TREE("tree"),
+	STONECEILING("stoneCeiling"),
 	GRASS("grass");
 	private final String filename;
 	Block(String fn){

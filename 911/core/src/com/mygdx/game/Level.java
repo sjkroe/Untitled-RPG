@@ -12,8 +12,8 @@ public class Level {
 	int [][] rotationLay2=new int[13][10];
 	Block [][] lay3=new Block[11][10];
 	int [][] rotationLay3=new int[11][10];
-	final char idChars[]={'1','2','3','4','5','6','7','s','g','t'};
-	final Block idBlocks[]={Block.GRASS,Block.STONE1,Block.STONE2,Block.STONE3,Block.STONE4,Block.STONE5,Block.STONE6,Block.STONE,Block.STONEGRASS,Block.TREE};
+	final char idChars[]={'1','2','3','4','5','6','7','s','g','t','c'};
+	final Block idBlocks[]={Block.GRASS,Block.STONE1,Block.STONE2,Block.STONE3,Block.STONE4,Block.STONE5,Block.STONE6,Block.STONE,Block.STONEGRASS,Block.TREE,Block.STONECEILING};
 	public Level(){
 		File lvl1=new File("lvl 1.txt");
 		File lvl2=new File("lvl 2.txt");
