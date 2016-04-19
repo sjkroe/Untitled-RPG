@@ -34,7 +34,7 @@ public class Player extends Entity{
 	private final float MAX_STAMINA=100f;
 	public final int runCycleTime=15;
 	private float runTime,drunTime,attackTime;
-	private boolean up,down,left,right,space,rmb;
+	private boolean up,down,left,right,space,rmb,lmb;
 	boolean strafe,attack;
 	int strafeTime,inactiveTime;
 	private int mouseX,mouseY;
@@ -43,7 +43,7 @@ public class Player extends Entity{
 	private float dx,dz;
 	private int framesInAnim;
 	private float scale;
-	private float health,stamina;
+	private float health,stamina,staminaRegen;
 	private State curState;
 	Vector2 velocity,updir,sidedir,upv,sidev;
 	
@@ -55,6 +55,8 @@ public class Player extends Entity{
 		down=false;
 		left=false;
 		right=false;
+		rmb=false;
+		lmb=false;
 		framesInAnim=0;
 		angle=0;
 		initMouseX=getAngle();
@@ -72,6 +74,7 @@ public class Player extends Entity{
 		runTime=0;
 		drunTime=0;
 		attackTime=0;
+		staminaRegen=1f;
 		curState=State.IDLE;
 	}
 	public Matrix4 update(ArrayList<Rectangle2D.Float> e){
@@ -85,7 +88,7 @@ public class Player extends Entity{
 		//Vector2 sidevdir=new Vector2(upv.y,-upv.x);
 		boolean tmp=false;
 			//delete
-		if(rmb&&inactiveTime==0&&!attack&&stamina>=50f){
+		if(rmb&&inactiveTime==0&&!attack&&curState!=State.BLOCK&&stamina>=50f){
 			attack=true;
 			inactiveTime=30;
 			stamina-=50;
@@ -97,7 +100,7 @@ public class Player extends Entity{
 		}
 		if(up&&!down){
 			velocity=new Vector2(velocity.x+ACCELERATION*updir.x,velocity.y+ACCELERATION*updir.y);
-			if(!strafe&&space&&inactiveTime==0&&stamina>=30f){
+			if(!strafe&&space&&curState!=State.BLOCK&&inactiveTime==0&&stamina>=30f){
 				strafe=true;
 				strafeTime=10;
 				stamina-=30f;
@@ -107,7 +110,7 @@ public class Player extends Entity{
 		}else if(!up&&down){
 			
 			velocity=new Vector2(velocity.x-ACCELERATION*updir.x,velocity.y-ACCELERATION*updir.y);
-			if(!strafe&&space&&inactiveTime==0&&stamina>=30f){
+			if(!strafe&&space&&curState!=State.BLOCK&&inactiveTime==0&&stamina>=30f){
 				strafe=true;
 				strafeTime=10;
 				stamina-=30f;
@@ -127,7 +130,7 @@ public class Player extends Entity{
 		}
 		if(!left&&right){
 			velocity=new Vector2(velocity.x+ACCELERATION*sidedir.x,velocity.y+ACCELERATION*sidedir.y);
-			if(!strafe&&space&&inactiveTime==0&&stamina>=30f){
+			if(!strafe&&space&&curState!=State.BLOCK&&inactiveTime==0&&stamina>=30f){
 				strafe=true;
 				strafeTime=10;
 				stamina-=30;
@@ -136,7 +139,7 @@ public class Player extends Entity{
 			}
 		}else if(left&&!right){
 			velocity=new Vector2(velocity.x-ACCELERATION*sidedir.x,velocity.y-ACCELERATION*sidedir.y);
-			if(!strafe&&space&&inactiveTime==0&&stamina>=30f){
+			if(!strafe&&space&&curState!=State.BLOCK&&inactiveTime==0&&stamina>=30f){
 				strafe=true;
 				strafeTime=10;
 				stamina-=30;
@@ -158,7 +161,11 @@ public class Player extends Entity{
 		if(velocity.len()>MAX_SPEED){
 			velocity.setLength(MAX_SPEED);
 		}
-		drunTime=(velocity.len()/MAX_SPEED)/50f;
+		if(curState!=State.BLOCK){
+			drunTime=(velocity.len()/MAX_SPEED)/50f;
+		}else{
+			drunTime=(velocity.len()/MAX_SPEED)/200f;
+		}
 		if(right||left||up||down){
 			runTime+=drunTime;
 			if(runTime>1f){
@@ -213,6 +220,15 @@ public class Player extends Entity{
 				curState=State.IDLE;
 			}
 		}
+		if(lmb){
+			curState=State.BLOCK;
+			speedScale=4/10f;
+			staminaRegen=.25f;
+			drunTime/=2;
+		}else{
+			staminaRegen=1f;
+			drunTime*=2;
+		}
 		dx=velocity.x;
 		dz=velocity.y;
 		
@@ -227,7 +243,7 @@ public class Player extends Entity{
 		else if(stamina<0)
 			stamina=0;
 		else if(stamina<MAX_STAMINA-1f&&inactiveTime==0)
-			stamina+=1f;
+			stamina+=staminaRegen;
 		if(!collides(e,dx*.001f,dz*.001f)){
 			
 		}
@@ -257,7 +273,7 @@ public class Player extends Entity{
 		foot1M4.translate(0,-1/2f,0);
 		foot2M4.rotateRad(new Vector3(1,0,0),(float)(Math.sin(Math.PI*2*getRunTime())*Math.PI*3/8));
 		foot2M4.translate(0,-1/2f,0);
-		Matrix4 arm1M4,arm2M4,swordM4;
+		Matrix4 arm1M4,arm2M4,swordM4,shieldM4;
 		arm2M4=new Matrix4(playerM4);
 		arm2M4.translate(-5/8f, 7/8f, 0f);
 		arm2M4.rotateRad(new Vector3(1,0,0),(float)(Math.sin(Math.PI*2*getRunTime())*Math.PI/6));
@@ -265,7 +281,7 @@ public class Player extends Entity{
 		if(getState()==State.ATTACK){
 			arm1M4=new Matrix4(playerM4);
 			arm1M4.translate(5/8f, 7/8f, 0f);
-			arm1M4.rotateRad(new Vector3(-1,0,0),(float)(Math.PI/6-(5*Math.PI/6)*(1-(getAttackTime()+5)*(getAttackTime()+5)*(getAttackTime()+5)/42875f)));
+			arm1M4.rotateRad(new Vector3(-1,0,0),(float)(Math.PI/6-(5*Math.PI/6)*(1-(Math.pow(getAttackTime()+5,5)/52521875f))));
 			
 			arm1M4.translate(0f, -9/8f, 0f);
 			swordM4=new Matrix4(arm1M4);
@@ -279,6 +295,27 @@ public class Player extends Entity{
 			swordM4=new Matrix4(arm1M4);
 			swordM4.translate(0f,-1/4f,-11/8f);
 		}
+		if(getState()==State.BLOCK){
+			arm2M4=new Matrix4(playerM4);
+			arm2M4.translate(-5/8f, 7/8f, 0f);
+			arm2M4.rotateRad(new Vector3(1,0,0),(float)(Math.PI/2));
+			arm2M4.rotateRad(new Vector3(0,0,-1),-(float)Math.PI/6);
+			//arm2M4.translate(translation)
+			arm2M4.translate(0f, -7/8f, 1/4f);
+			shieldM4=new Matrix4(arm2M4);
+			shieldM4.rotateRad(new Vector3(1,0,0),-(float)(Math.PI/2));
+			shieldM4.rotateRad(new Vector3(0,-1,0),(float)(Math.PI/3));
+			shieldM4.translate(-1/8f,-3/4f,1/8f);
+		}else{
+			arm2M4=new Matrix4(playerM4);
+			arm2M4.translate(-5/8f, 7/8f, 0f);
+			arm2M4.rotateRad(new Vector3(1,0,0),(float)(Math.sin(Math.PI*2*getRunTime())*Math.PI/6));
+			arm2M4.translate(0f, -9/8f, 0f);
+			
+			shieldM4=new Matrix4(arm2M4);
+			shieldM4.rotateRad(new Vector3(-1,0,0),(float)(Math.PI/2));
+			shieldM4.translate(-1/4f,-1f,0f);
+		}
 		ArrayList<Matrix4> m4s=new ArrayList<Matrix4>();
 		m4s.add(playerM4);
 		m4s.add(foot1M4);
@@ -286,6 +323,7 @@ public class Player extends Entity{
 		m4s.add(arm1M4);
 		m4s.add(arm2M4);
 		m4s.add(swordM4);
+		m4s.add(shieldM4);
 		return m4s;
 	}
 	private boolean collides(ArrayList<Rectangle2D.Float> e, float dx2, float dz2) {
@@ -461,6 +499,9 @@ public class Player extends Entity{
 		case 'r':
 			rmb=false;
 			break;
+		case 'l':
+			lmb=false;
+			break;
 		}
 		
 	}
@@ -468,6 +509,9 @@ public class Player extends Entity{
 		switch(c){
 		case 'r':
 			rmb=true;
+			break;
+		case 'l':
+			lmb=true;
 			break;
 		}
 	}

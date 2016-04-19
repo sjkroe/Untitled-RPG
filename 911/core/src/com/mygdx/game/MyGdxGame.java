@@ -69,8 +69,8 @@ public class MyGdxGame extends ApplicationAdapter implements ApplicationListener
 	CameraInputController camController;
 	Model play,fireball,sword;
     ModelInstance playerInstance,swordInstance;
-    Model foot,body,arm,arm2;
-    ModelInstance foot1I,foot2I,bodyI,arm1I,arm2I;
+    Model foot,body,arm,arm2,shield;
+    ModelInstance foot1I,foot2I,bodyI,arm1I,arm2I,shieldI;
     Model Sfoot,Sbody,Sarm,Sarm2;
     ModelInstance Sfoot1I,Sfoot2I,SbodyI,Sarm1I,Sarm2I,SswordI;
     Player player;
@@ -120,6 +120,7 @@ public class MyGdxGame extends ApplicationAdapter implements ApplicationListener
         am.load("models/stone5.obj", Model.class);
         am.load("models/stone6.obj", Model.class);
         am.load("models/stone.obj", Model.class);
+        am.load("models/shield.obj", Model.class);
         am.load("models/stoneCeiling.obj", Model.class);
         am.load("models/grassStone.obj", Model.class);
         am.load("models/grass.obj", Model.class);
@@ -135,7 +136,7 @@ public class MyGdxGame extends ApplicationAdapter implements ApplicationListener
         am.load("models/SkeletonBody.obj", Model.class);
         loading = true;
         skeleton1=new NPC(5f,1f,5f,16,16,13,1/4f);
-        player=new Player(5f,1f,5f,16,16,13,1/4f);
+        player=new Player(10f,1f,10f,16,16,13,1/4f);
         
         e.add(new Entity(-12f,1f,-13f,4,26,10));
         e.add(new Entity(-8f,1f,-13f,23,4,10));
@@ -188,6 +189,7 @@ public class MyGdxGame extends ApplicationAdapter implements ApplicationListener
         Sfoot=am.get("models/SkeletonFoot.obj",Model.class);
         Sarm=am.get("models/SkeletonArm.obj",Model.class);
         Sarm2=am.get("models/SkeletonArm2.obj",Model.class);
+        shield=am.get("models/shield.obj",Model.class);
         arm1I=new ModelInstance(arm);
         arm2I=new ModelInstance(arm2);
         foot1I=new ModelInstance(foot);
@@ -200,6 +202,7 @@ public class MyGdxGame extends ApplicationAdapter implements ApplicationListener
         SbodyI=new ModelInstance(Sbody);
         SswordI=new ModelInstance(sword);
         swordInstance=new ModelInstance(sword);
+        shieldI=new ModelInstance(shield);
         for(Node n:bodyI.nodes){
         	n.scale.set(1/8f,1/8f,1/8f);
         }
@@ -239,6 +242,11 @@ public class MyGdxGame extends ApplicationAdapter implements ApplicationListener
         for(Node n:SswordI.nodes){
         	n.scale.set(1/8f,1/8f,1/8f);
         }
+        for(Node n:shieldI.nodes){
+        	n.scale.set(1/8f,1/8f,1/8f);
+        }
+        shieldI.calculateTransforms();
+        shieldI.transform.setToTranslation(0, 0f, 0f);
         swordInstance.calculateTransforms();
         swordInstance.transform.setToTranslation(0, 0f, 0f);
         SswordI.calculateTransforms();
@@ -293,6 +301,7 @@ public class MyGdxGame extends ApplicationAdapter implements ApplicationListener
         instances.add(arm1I);
         instances.add(arm2I);
         instances.add(swordInstance);
+        instances.add(shieldI);
         instances.add(SbodyI);
         instances.add(Sfoot1I);
         instances.add(Sfoot2I);
@@ -344,10 +353,15 @@ public class MyGdxGame extends ApplicationAdapter implements ApplicationListener
 				}else{
 					player.mouseReleased('r');
 				}
+				if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+					player.mousePressed('l');
+				}else{
+					player.mouseReleased('l');
+				}
 				player.setMousePos((Gdx.input.getX()-initMouseX)/2,Gdx.input.getY());
 				Matrix4 m4=player.update(collisions);
 				skeleton1.update(collisions, new Vector2(player.getX(),player.getZ()));
-				if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+				/*if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
 					if(timeUntilFireball==0){
 						float x6=(float)(Math.cos(Math.toRadians(((player.getAngle()-initMouseX)+225)%360)))*player.getWidth();
 						float y6=(float)(Math.sin(Math.toRadians(((player.getAngle()-initMouseX)+225)%360)))*player.getWidth();
@@ -375,14 +389,15 @@ public class MyGdxGame extends ApplicationAdapter implements ApplicationListener
 						m.calculateTransforms();
 						fireballInstances.add(m);
 					}
-				}
+				}*/
 				if(instances.size()>0){
 					Matrix4 playerM4=new Matrix4();
 					Quaternion playerQ=new Quaternion();
-					playerQ.setFromAxis(new Vector3(0,-1,0),((player.getAngle()-initMouseX)+315)%360);
+					playerQ.setFromAxis(new Vector3(0,-1,0),((player.getAngle()-initMouseX)+225)%360);
 					Quaternion skeletonQ=new Quaternion();
-					skeletonQ.setFromAxis(new Vector3(0,-1,0),90);
-					//System.out.println(arg0);
+					//skeletonQ.setFromAxis(new Vector3(0,-1,0),skeletonQ.getAxisAngle(new Vector3((skeleton1.getX()-player.getX()),0,skeleton1.getZ()-player.getZ())));
+					skeletonQ.setFromAxis(new Vector3(0,-1,0),270+(float) ((180/Math.PI)*Math.atan2(skeleton1.getZ()-player.getZ(),(skeleton1.getX()-player.getX()))));
+					System.out.println(90+(float) ((360/(Math.PI*2))*Math.atan(skeleton1.getZ()-player.getZ())/(skeleton1.getX()-player.getX())));
 					ArrayList<Matrix4> playerm4s=player.getTransforms(playerQ);
 					ArrayList<Matrix4> skeletonm4s=skeleton1.getTransforms(skeletonQ);
 					for(int x=0;x<playerm4s.size();x++){

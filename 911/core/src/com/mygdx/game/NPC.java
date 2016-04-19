@@ -10,9 +10,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 public class NPC extends Entity{
-	private final float MAX_SPEED=.2f;
+	private final float MAX_SPEED=.175f;
 	private final float ACCELERATION=.02f;
-	private final float NORMALSPEEDSCALE=1.5f;
+	private final float NORMALSPEEDSCALE=2/2.5f;
 	private final float ROLLSPEEDSCALE=2f;
 	private final float MAX_HEALTH=100f;
 	private final float MAX_STAMINA=100f;
@@ -60,6 +60,7 @@ public class NPC extends Entity{
 		float vel=(float) Math.sqrt(dx*dx+dx*dz);
 		velocity=new Vector2(dx,dz);
 		updir=new Vector2(playerLoc.x-getX(),playerLoc.y-getZ());
+		updir.setLength(1);
 		//updir.set(updir.x/updir.len(),updir.y/updir.len());
 		sidedir=new Vector2(updir.y,-updir.x);
 		upv=new Vector2(velocity.dot(updir)*updir.x,velocity.dot(updir)*updir.y);
@@ -72,30 +73,44 @@ public class NPC extends Entity{
 			curState=State.ATTACK;
 			attackTime++;
 		}
-		if(playerLoc.sub(new Vector2(getX(),getZ())).len()>6){
-			velocity=new Vector2(velocity.x+ACCELERATION*updir.x,velocity.y+ACCELERATION*updir.y);
+		if(playerLoc.sub(new Vector2(getX(),getZ())).len()>4f){
+			velocity=new Vector2(velocity.x+ACCELERATION*updir.x/updir.len(),velocity.y+ACCELERATION*updir.y/updir.len());
 		}else{
 			/*if(velocity.len()>ACCELERATION){
 				velocity.sub(updir.scl(ACCELERATION));
 			}else{
 				velocity=new Vector2(0,0);
 			}*/
+			if(velocity.dot(updir)/updir.len()<.01f&&velocity.dot(updir)/updir.len()>-ACCELERATION){
+				velocity=new Vector2(velocity.x-velocity.dot(updir)*updir.x/(updir.len()*updir.len()),velocity.y-velocity.dot(updir)*updir.y/(updir.len()*updir.len()));
+			}else{
 				if(velocity.dot(updir)>0f){
-					velocity=new Vector2(velocity.x-ACCELERATION*updir.x,velocity.y-ACCELERATION*updir.y);
+					velocity=new Vector2(velocity.x-ACCELERATION*updir.x/updir.len(),velocity.y-ACCELERATION*updir.y/updir.len());
 				}else{
-					velocity=new Vector2(velocity.x+ACCELERATION*updir.x,velocity.y+ACCELERATION*updir.y);
+					velocity=new Vector2(velocity.x+ACCELERATION*updir.x/updir.len(),velocity.y+ACCELERATION*updir.y/updir.len());
 				}
+			}
+			if(velocity.dot(sidedir)/sidedir.len()<.01f&&velocity.dot(sidedir)/sidedir.len()>-.01f){
+				velocity=new Vector2(velocity.x-velocity.dot(sidedir)*sidedir.x/(sidedir.len()*sidedir.len()),velocity.y-velocity.dot(sidedir)*sidedir.y/(sidedir.len()*sidedir.len()));
+			}else{
+				if(velocity.dot(sidedir)>0f){
+					velocity=new Vector2(velocity.x-ACCELERATION*sidedir.x/sidedir.len(),velocity.y-ACCELERATION*sidedir.y/sidedir.len());
+				}else{
+					velocity=new Vector2(velocity.x+ACCELERATION*sidedir.x/sidedir.len(),velocity.y+ACCELERATION*sidedir.y/sidedir.len());
+				}
+			}
 		}
 			
 		if(velocity.len()>MAX_SPEED){
 			velocity.setLength(MAX_SPEED);
 		}
 		drunTime=(velocity.len()/MAX_SPEED)/50f;
-		
+		if(playerLoc.sub(new Vector2(getX(),getZ())).len()>6f){
 			runTime+=drunTime;
 			if(runTime>1f){
 				runTime-=1f;
 			}
+		}else{
 			if(runTime>drunTime*2){
 				if(runTime<.25f){
 					runTime-=drunTime*2;
@@ -118,6 +133,7 @@ public class NPC extends Entity{
 			}else{
 				runTime=0;
 			}
+		}
 		
 		if(inactiveTime>0){
 			inactiveTime--;
@@ -130,17 +146,6 @@ public class NPC extends Entity{
 		dz=velocity.y;
 		
 		
-		if(stamina<0){
-			stamina=0;
-		}else if(stamina>MAX_STAMINA){
-			stamina=MAX_STAMINA;
-		}
-		if(stamina>MAX_STAMINA)
-			stamina=MAX_STAMINA;
-		else if(stamina<0)
-			stamina=0;
-		else if(stamina<MAX_STAMINA-1f&&inactiveTime==0)
-			stamina+=1f;
 		if(!collides(e,dx*speedScale,dz*speedScale)){
 		setX(getX()+dx*speedScale);
 		setZ(getZ()+dz*speedScale);
@@ -156,7 +161,7 @@ public class NPC extends Entity{
 			playerM4.translate(0,(float)((8*(getRunTime())-16*((getRunTime())*(getRunTime())))/5f),0).rotateRad(new Vector3(1,0,0),(float)(-Math.PI/24*getVelPer()));
 		}
 		Matrix4 foot1M4=new Matrix4(playerM4);
-		foot1M4.translate(5/16f, -1/2f, -1/8f);
+		foot1M4.translate(5/16f, -3/4f, -1/8f);
 		Matrix4 foot2M4=new Matrix4(playerM4);
 		foot2M4.translate(-5/16f, -1/2f, -1/8f);
 		foot1M4.rotateRad(new Vector3(1,0,0),(float)(Math.sin(Math.PI*2*getRunTime())*-Math.PI*3/8));

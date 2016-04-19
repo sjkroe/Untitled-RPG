@@ -1,5 +1,5 @@
 package com.mygdx.game;
 
 public enum State {
-	IDLE,WALK,ATTACK,ROLL;
+	IDLE,WALK,ATTACK,ROLL,BLOCK;
 }
